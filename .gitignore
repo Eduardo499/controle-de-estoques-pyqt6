@@ -1,0 +1,21 @@
+# Ignore arquivos de configuração do ambiente
+.env
+
+# Ignore diretórios de cache
+__pycache__/
+*.pyc
+
+# Ignore diretórios de ambientes virtuais
+venv/
+env/
+
+# Ignore arquivos de log
+*.log
+
+# Ignore arquivos de pacotes instalados
+*.egg-info/
+dist/
+build/
+
+# Ignore arquivos do VS Code
+.vscode/
