@@ -1,9 +1,7 @@
-from PyQt6.QtWidgets import QMainWindow, QStackedWidget, QVBoxLayout, QWidget
+from PyQt6.QtWidgets import QMainWindow, QStackedWidget, QVBoxLayout, QWidget, QApplication
+from gui.main_window_ui import Ui_menu
 
-class MainWindow(QMainWindow):
+class MainWindow(QMainWindow, Ui_menu):
     def __init__(self):
         super().__init__()
-        self.setWindowTitle("Controle de Estoque")
-        self.setFixedSize(800, 600)
-        centralWidget = QWidget()
-        self.setCentralWidget(centralWidget)
+        self.setupUi(self)

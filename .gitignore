@@ -19,3 +19,6 @@ build/
 
 # Ignore arquivos do VS Code
 .vscode/
+
+# Ignore arquivos de UI
+*.ui
