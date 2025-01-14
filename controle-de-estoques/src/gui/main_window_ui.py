@@ -65,9 +65,9 @@ class Ui_menu(object):
         _translate = QtCore.QCoreApplication.translate
         menu.setWindowTitle(_translate("menu", "Controle de Estoques Python"))
         self.ver_estoque.setText(_translate("menu", "Ver estoque"))
-        self.ver_relatorios.setText(_translate("menu", "Ver relatorios"))
+        self.ver_relatorios.setText(_translate("menu", "Ver relatórios"))
         self.adicionar_item.setText(_translate("menu", "Adicionar item"))
         self.remove_item.setText(_translate("menu", "Remover item"))
-        self.label_codigo.setText(_translate("menu", "Codigo"))
+        self.label_codigo.setText(_translate("menu", "Código"))
         self.label_preco.setText(_translate("menu", "Preço"))
         self.label_quantidade.setText(_translate("menu", "Quantidade"))
