@@ -1,7 +1,6 @@
 from PyQt6.QtWidgets import QMainWindow, QMessageBox, QInputDialog, QTableWidget, QTableWidgetItem, QVBoxLayout, QWidget, QPushButton
 from gui.main_window_ui import Ui_menu
 from utils.database import conectar, executar_consulta, desconectar
-from gui.tabela import Ui_tabela
 
 class MainWindow(QMainWindow, Ui_menu):
     def __init__(self):
@@ -9,6 +8,7 @@ class MainWindow(QMainWindow, Ui_menu):
         self.setupUi(self)
         self.adicionar_item.clicked.connect(self.adicionar_produto)
         self.ver_estoque.clicked.connect(self.mostrar_estoque)
+        self.remove_item.clicked.connect(self.remover_produto)
 
     def adicionar_produto(self):
         codigo = self.codigo.text()
@@ -68,14 +68,58 @@ class MainWindow(QMainWindow, Ui_menu):
         self.quantidade.clear()
         self.preco.clear()
 
+    def remover_produto(self):
+        codigo = self.codigo.text()
+        quantidade = self.quantidade.text()
+
+        if not codigo or not quantidade:
+            QMessageBox.warning(self, "Erro", "Código e quantidade devem ser preenchidos")
+            return
+
+        try:
+            quantidade = int(quantidade)
+        except ValueError:
+            QMessageBox.warning(self, "Erro", "Quantidade deve ser um número inteiro")
+            return
+
+        conexao = conectar()
+        consulta_verificar = "SELECT quantidade FROM estoque WHERE codigo = ?"
+        cursor = conexao.cursor()
+        cursor.execute(consulta_verificar, (codigo,))
+        resultado = cursor.fetchone()
+
+        if not resultado:
+            QMessageBox.warning(self, "Erro", "Produto não encontrado no estoque")
+        else:
+            quantidade_existente = resultado[0]
+            nova_quantidade = quantidade_existente - quantidade
+
+            if nova_quantidade < 0:
+                QMessageBox.warning(self, "Erro", "Quantidade a remover excede a quantidade em estoque")
+            elif nova_quantidade == 0:
+                consulta_remover = "DELETE FROM estoque WHERE codigo = ?"
+                executar_consulta(conexao, consulta_remover, (codigo,))
+                QMessageBox.information(self, "Sucesso", "Produto removido do estoque")
+            else:
+                consulta_atualizar = "UPDATE estoque SET quantidade = ? WHERE codigo = ?"
+                parametros = (nova_quantidade, codigo)
+                executar_consulta(conexao, consulta_atualizar, parametros)
+                QMessageBox.information(self, "Sucesso", "Quantidade do produto atualizada com sucesso")
+
+        desconectar(conexao)
+        self.codigo.clear()
+        self.quantidade.clear()
+
     def mostrar_estoque(self):
         self.tabela_window = TabelaWindow()
         self.tabela_window.show()
 
-class TabelaWindow(QWidget, Ui_tabela):
+class TabelaWindow(QWidget):
     def __init__(self):
         super().__init__()
-        self.setupUi(self)
+        self.setWindowTitle("Estoque")
+        self.setGeometry(100, 100, 600, 400)
+        self.pushButton = QPushButton("Voltar", self)
         self.pushButton.clicked.connect(self.voltar)
         self.carregar_dados()
 
