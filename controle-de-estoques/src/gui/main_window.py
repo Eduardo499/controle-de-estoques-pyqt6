@@ -1,12 +1,14 @@
 from PyQt6.QtWidgets import QMainWindow, QMessageBox, QInputDialog, QTableWidget, QTableWidgetItem, QVBoxLayout, QWidget, QPushButton
 from gui.main_window_ui import Ui_menu
 from utils.database import conectar, executar_consulta, desconectar
+from gui.tabela import Ui_tabela
 
 class MainWindow(QMainWindow, Ui_menu):
     def __init__(self):
         super().__init__()
         self.setupUi(self)
         self.adicionar_item.clicked.connect(self.adicionar_produto)
+        self.ver_estoque.clicked.connect(self.mostrar_estoque)
 
     def adicionar_produto(self):
         codigo = self.codigo.text()
@@ -53,3 +55,39 @@ class MainWindow(QMainWindow, Ui_menu):
         self.codigo.clear()
         self.quantidade.clear()
         self.preco.clear()
+
+    def mostrar_estoque(self):
+        self.tabela_window = TabelaWindow()
+        self.tabela_window.show()
+
+class TabelaWindow(QWidget, Ui_tabela):
+    def __init__(self):
+        super().__init__()
+        self.setupUi(self)
+        self.pushButton.clicked.connect(self.voltar)
+        self.carregar_dados()
+
+    def carregar_dados(self):
+        conexao = conectar()
+        consulta = "SELECT codigo, nome_produto, quantidade, preco FROM estoque"
+        cursor = conexao.cursor()
+        cursor.execute(consulta)
+        resultados = cursor.fetchall()
+        desconectar(conexao)
+
+        self.tableWidget = QTableWidget(self)
+        self.tableWidget.setRowCount(len(resultados))
+        self.tableWidget.setColumnCount(4)
+        self.tableWidget.setHorizontalHeaderLabels(["Código", "Nome do Produto", "Quantidade", "Preço"])
+
+        for i, linha in enumerate(resultados):
+            for j, valor in enumerate(linha):
+                self.tableWidget.setItem(i, j, QTableWidgetItem(str(valor)))
+
+        layout = QVBoxLayout()
+        layout.addWidget(self.tableWidget)
+        layout.addWidget(self.pushButton)
+        self.setLayout(layout)
+
+    def voltar(self):
+        self.close()
