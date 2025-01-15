@@ -27,13 +27,12 @@ class MainWindow(QMainWindow, Ui_menu):
             return
 
         conexao = conectar()
-        consulta_verificar = "SELECT nome_produto FROM estoque WHERE codigo = ?"
+        consulta_verificar = "SELECT nome_produto, quantidade, preco FROM estoque WHERE codigo = ?"
         cursor = conexao.cursor()
         cursor.execute(consulta_verificar, (codigo,))
         resultado = cursor.fetchone()
 
         if not resultado:
-            QMessageBox.warning(self, "Erro", "Código do produto não encontrado no banco de dados. Adicionando novo produto.")
             nome, ok = QInputDialog.getText(self, "Nome do Produto", "Digite o nome do produto:")
             if not ok or not nome:
                 QMessageBox.warning(self, "Erro", "Nome do produto deve ser preenchido")
@@ -45,9 +44,22 @@ class MainWindow(QMainWindow, Ui_menu):
             executar_consulta(conexao, consulta_inserir, parametros)
             QMessageBox.information(self, "Sucesso", "Produto adicionado com sucesso")
         else:
-            nome = resultado[0]
-            consulta_atualizar = "UPDATE estoque SET quantidade = ?, preco = ? WHERE codigo = ?"
-            parametros = (quantidade, preco, codigo)
+            nome, quantidade_existente, preco_existente = resultado
+            nova_quantidade = quantidade_existente + quantidade
+
+            if preco != preco_existente:
+                resposta = QMessageBox.question(self, "Preço Diferente", f"O preço atual é {preco_existente}. Deseja atualizar para {preco}?",
+                                                QMessageBox.StandardButton.Yes | QMessageBox.StandardButton.No)
+                if resposta == QMessageBox.StandardButton.Yes:
+                    consulta_atualizar = "UPDATE estoque SET quantidade = ?, preco = ? WHERE codigo = ?"
+                    parametros = (nova_quantidade, preco, codigo)
+                else:
+                    consulta_atualizar = "UPDATE estoque SET quantidade = ? WHERE codigo = ?"
+                    parametros = (nova_quantidade, codigo)
+            else:
+                consulta_atualizar = "UPDATE estoque SET quantidade = ? WHERE codigo = ?"
+                parametros = (nova_quantidade, codigo)
+
             executar_consulta(conexao, consulta_atualizar, parametros)
             QMessageBox.information(self, "Sucesso", "Produto atualizado com sucesso")
 
