@@ -1,7 +1,9 @@
 import sqlite3
+import os
 
 def conectar():
-    return sqlite3.connect('/home/eduardo/projetos/controle_estoques/controle-de-estoques/db/estoque')
+    db_path = os.path.join(os.path.dirname(__file__), '../db/estoque')
+    return sqlite3.connect(db_path)
 
 def desconectar(conexao):
     conexao.close()

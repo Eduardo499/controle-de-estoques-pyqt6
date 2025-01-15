@@ -1,0 +1,5 @@
+2025-01-15 15:24:32.222371: Atualizado produto: 4, nova quantidade: 35, preço mantido: 10.0
+2025-01-15 15:24:39.702315: Atualizado produto: 5, nova quantidade: 10, novo preço: 6.0
+2025-01-15 15:24:46.144949: Adicionado novo produto: 10, e, 3, 4.0
+2025-01-15 15:24:51.137043: Atualizado produto: 4, nova quantidade: 39, novo preço: 4.0
+2025-01-15 15:27:42.672049: Atualizado produto: 5, quantidade removida: 4, nova quantidade: 6

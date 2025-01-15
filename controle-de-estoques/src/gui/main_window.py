@@ -1,6 +1,8 @@
-from PyQt6.QtWidgets import QMainWindow, QMessageBox, QInputDialog, QTableWidget, QTableWidgetItem, QVBoxLayout, QWidget, QPushButton
+from PyQt6.QtWidgets import QMainWindow, QMessageBox, QInputDialog, QTableWidget, QTableWidgetItem, QVBoxLayout, QWidget, QPushButton, QTextEdit
 from gui.main_window_ui import Ui_menu
 from utils.database import conectar, executar_consulta, desconectar
+import os
+from datetime import datetime
 
 class MainWindow(QMainWindow, Ui_menu):
     def __init__(self):
@@ -9,6 +11,12 @@ class MainWindow(QMainWindow, Ui_menu):
         self.adicionar_item.clicked.connect(self.adicionar_produto)
         self.ver_estoque.clicked.connect(self.mostrar_estoque)
         self.remove_item.clicked.connect(self.remover_produto)
+        self.ver_relatorios.clicked.connect(self.abrir_relatorios)
+
+    def log_acao(self, acao):
+        log_path = os.path.join(os.path.dirname(__file__), '../db/log.txt')
+        with open(log_path, 'a') as log_file:
+            log_file.write(f"{datetime.now()}: {acao}\n")
 
     def adicionar_produto(self):
         codigo = self.codigo.text()
@@ -42,6 +50,7 @@ class MainWindow(QMainWindow, Ui_menu):
             consulta_inserir = "INSERT INTO estoque (codigo, nome_produto, quantidade, preco) VALUES (?, ?, ?, ?)"
             parametros = (codigo, nome, quantidade, preco)
             executar_consulta(conexao, consulta_inserir, parametros)
+            self.log_acao(f"Adicionado novo produto: {codigo}, {nome}, {quantidade}, {preco}")
             QMessageBox.information(self, "Sucesso", "Produto adicionado com sucesso")
         else:
             nome, quantidade_existente, preco_existente = resultado
@@ -53,12 +62,15 @@ class MainWindow(QMainWindow, Ui_menu):
                 if resposta == QMessageBox.StandardButton.Yes:
                     consulta_atualizar = "UPDATE estoque SET quantidade = ?, preco = ? WHERE codigo = ?"
                     parametros = (nova_quantidade, preco, codigo)
+                    self.log_acao(f"Atualizado produto: {codigo}, nova quantidade: {nova_quantidade}, novo preço: {preco}")
                 else:
                     consulta_atualizar = "UPDATE estoque SET quantidade = ? WHERE codigo = ?"
                     parametros = (nova_quantidade, codigo)
+                    self.log_acao(f"Atualizado produto: {codigo}, nova quantidade: {nova_quantidade}, preço mantido: {preco_existente}")
             else:
                 consulta_atualizar = "UPDATE estoque SET quantidade = ? WHERE codigo = ?"
                 parametros = (nova_quantidade, codigo)
+                self.log_acao(f"Atualizado produto: {codigo}, nova quantidade: {nova_quantidade}, preço mantido: {preco_existente}")
 
             executar_consulta(conexao, consulta_atualizar, parametros)
             QMessageBox.information(self, "Sucesso", "Produto atualizado com sucesso")
@@ -99,11 +111,13 @@ class MainWindow(QMainWindow, Ui_menu):
             elif nova_quantidade == 0:
                 consulta_remover = "DELETE FROM estoque WHERE codigo = ?"
                 executar_consulta(conexao, consulta_remover, (codigo,))
+                self.log_acao(f"Removido produto: {codigo}, quantidade removida: {quantidade}")
                 QMessageBox.information(self, "Sucesso", "Produto removido do estoque")
             else:
                 consulta_atualizar = "UPDATE estoque SET quantidade = ? WHERE codigo = ?"
                 parametros = (nova_quantidade, codigo)
                 executar_consulta(conexao, consulta_atualizar, parametros)
+                self.log_acao(f"Atualizado produto: {codigo}, quantidade removida: {quantidade}, nova quantidade: {nova_quantidade}")
                 QMessageBox.information(self, "Sucesso", "Quantidade do produto atualizada com sucesso")
 
         desconectar(conexao)
@@ -113,6 +127,10 @@ class MainWindow(QMainWindow, Ui_menu):
     def mostrar_estoque(self):
         self.tabela_window = TabelaWindow()
         self.tabela_window.show()
+
+    def abrir_relatorios(self):
+        self.rel_window = RelatoriosWindow()
+        self.rel_window.show()
 
 class TabelaWindow(QWidget):
     def __init__(self):
@@ -142,6 +160,37 @@ class TabelaWindow(QWidget):
 
         layout = QVBoxLayout()
         layout.addWidget(self.tableWidget)
+        layout.addWidget(self.pushButton)
+        self.setLayout(layout)
+
+    def voltar(self):
+        self.close()
+
+class RelatoriosWindow(QWidget):
+    def __init__(self):
+        super().__init__()
+        self.setWindowTitle("Relatórios")
+        self.setGeometry(100, 100, 600, 400)
+        self.textEdit = QTextEdit(self)
+        self.pushButton = QPushButton("Voltar", self)
+        self.pushButton.clicked.connect(self.voltar)
+        self.carregar_relatorios()
+
+    def carregar_relatorios(self):
+        log_path = os.path.join(os.path.dirname(__file__), '../db/log.txt')
+        
+        # Verifica se o arquivo existe, se não, cria o arquivo
+        if not os.path.exists(log_path):
+            os.makedirs(os.path.dirname(log_path), exist_ok=True)
+            with open(log_path, 'w') as log_file:
+                log_file.write('')
+
+        with open(log_path, 'r') as log_file:
+            conteudo = log_file.read()
+        self.textEdit.setText(conteudo)
+
+        layout = QVBoxLayout()
+        layout.addWidget(self.textEdit)
         layout.addWidget(self.pushButton)
         self.setLayout(layout)
 
