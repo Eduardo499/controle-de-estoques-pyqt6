@@ -1,6 +1,8 @@
+f
+
 class EstoqueController:
     def __init__(self):
-        self.produtos = []
+
 
     def adicionar_produto(self, produto):
         self.produtos.append(produto)

@@ -1,11 +1,15 @@
+import sqlite3
+
 def conectar():
-    # Função para conectar ao banco de dados
-    pass
+    return sqlite3.connect('/home/eduardo/projetos/controle_estoques/controle-de-estoques/db/estoque')
 
-def desconectar():
-    # Função para desconectar do banco de dados
-    pass
+def desconectar(conexao):
+    conexao.close()
 
-def executar_consulta(consulta, parametros=None):
-    # Função para executar uma consulta no banco de dados
-    pass
+def executar_consulta(conexao, consulta, parametros=None):
+    cursor = conexao.cursor()
+    if parametros:
+        cursor.execute(consulta, parametros)
+    else:
+        cursor.execute(consulta)
+    conexao.commit()
