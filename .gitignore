@@ -11,6 +11,10 @@ env/
 
 # Ignore arquivos de log
 *.log
+db/log.txt
+
+# Ignore arquivos de banco de dados
+db/estoque
 
 # Ignore arquivos de pacotes instalados
 *.egg-info/
@@ -22,3 +26,4 @@ build/
 
 # Ignore arquivos de UI
 *.ui
+

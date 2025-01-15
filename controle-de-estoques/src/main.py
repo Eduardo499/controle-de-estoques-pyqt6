@@ -2,8 +2,10 @@ import sys
 from PyQt6.QtWidgets import QApplication
 from gui.main_window import MainWindow
 from gui.main_window_ui import Ui_menu
+from utils import database
 
 def main():
+    database.criar_tabela()
     app = QApplication(sys.argv)
     window = MainWindow()
     window.show()
